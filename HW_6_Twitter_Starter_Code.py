@@ -171,7 +171,7 @@ def find_most_common_cooccurring_hashtag(tweet_data, hashtag_to_ignore):
     tweet_data: dict
         Twitter data as a dictionary for a specific query
     hashtag_to_ignore: string
-        the same hashtag that is queried in make_request_with_cache() 
+        the same hashtag that is queried in make_request_with_cache()
         (e.g. "#MarchMadness2021")
 
     Returns
@@ -184,9 +184,9 @@ def find_most_common_cooccurring_hashtag(tweet_data, hashtag_to_ignore):
     hashtag_list = []
     tweets = tweet_data['statuses']
     for t in tweets:
-        for entity_hashtag in t['entities']['hashtags']:
-            if '#' + entity_hashtag['text'] != hashtag:
-                hashtag_list.append(entity_hashtag['text'])
+        for h in t['entities']['hashtags']:
+            if '#' + h['text'].lower() != hashtag_to_ignore.lower():
+                hashtag_list.append(h['text'])
 
     count = {}
     for tag in hashtag_list:
@@ -195,24 +195,12 @@ def find_most_common_cooccurring_hashtag(tweet_data, hashtag_to_ignore):
         else:
             count[tag] = 1
 
-    max_number = 0
-    max_hashtag = ''
-    for k in count.keys():
-        if count[k] > max_number:
-            max_number = count[k]
-            max_hashtag = k
+    hashtag_by_frequency = []
+    count_by_value = {k: v for k, v in sorted(count.items(), key=lambda item: item[1], reverse=True)}
+    for k in count_by_value.keys():
+        hashtag_by_frequency.append(k)
 
-    return '#' + max_hashtag
-
-
-    ''' Hint: In case you're confused about the hashtag_to_ignore 
-    parameter, we want to ignore the hashtag we queried because it would 
-    definitely be the most occurring hashtag, and we're trying to find 
-    the most commonly co-occurring hashtag with the one we queried (so 
-    we're essentially looking for the second most commonly occurring 
-    hashtags).'''
-
-
+    return '#' + hashtag_by_frequency[0]
 
 if __name__ == "__main__":
     if not client_key or not client_secret:
@@ -227,7 +215,7 @@ if __name__ == "__main__":
     baseurl = "https://api.twitter.com/1.1/search/tweets.json"
     hashtag = "#MarchMadness2021"
     count = 100
-    tweet_data = make_request_with_cache(baseurl, hashtag, count)
+    tweet_data = make_request_with_cache(baseurl, hashtag.lower(), count)
 
     most_common_cooccurring_hashtag = find_most_common_cooccurring_hashtag(tweet_data, hashtag)
     print("The most commonly cooccurring hashtag with {} is {}.".format(hashtag, most_common_cooccurring_hashtag))
